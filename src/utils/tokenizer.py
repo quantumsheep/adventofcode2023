@@ -6,7 +6,7 @@ from typing import List
 class Tokenizer:
     tokens: List[str]
 
-    def to_tokens(self, text: str, *, with_collisions: bool = True) -> List[str]:
+    def to_tokens(self, text: str, *, with_collisions: bool = False) -> List[str]:
         tokens: List[str] = []
 
         i = 0
