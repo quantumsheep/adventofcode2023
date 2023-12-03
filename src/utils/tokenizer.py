@@ -1,7 +1,7 @@
 import re
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List
 
 
 @dataclass
@@ -11,6 +11,29 @@ class Token:
 
     pattern_type: str
     value: str
+
+    def __hash__(self):
+        return hash((self.line, self.column, self.pattern_type, self.value))
+
+
+class TokenizedText:
+    def __init__(self, text: str, tokens: List[Token]):
+        self.text = text
+        self.tokens = tokens
+
+        self._tokens_by_line: Dict[int, List[Token]] = {}
+        for token in self.tokens:
+            if token.line not in self._tokens_by_line:
+                self._tokens_by_line[token.line] = []
+
+            self._tokens_by_line[token.line].append(token)
+
+    def what_is_at(self, line: int, column: int) -> Token | None:
+        for token in self._tokens_by_line.get(line, []):
+            if token.column <= column and column < token.column + len(token.value):
+                return token
+
+        return None
 
 
 class Tokenizer:
@@ -27,12 +50,20 @@ class Tokenizer:
         self.ignore_patterns = ignore_patterns
 
     def to_tokens_simple(
-        self, text: str, *, with_collisions: bool = False
+        self,
+        text: str,
+        *,
+        with_collisions: bool = False,
     ) -> List[str]:
-        tokens = self.to_tokens(text, with_collisions=with_collisions)
-        return [token.value for token in tokens]
+        tokenized_text = self.tokenize(text, with_collisions=with_collisions)
+        return [token.value for token in tokenized_text.tokens]
 
-    def to_tokens(self, text: str, *, with_collisions: bool = False) -> List[Token]:
+    def tokenize(
+        self,
+        text: str,
+        *,
+        with_collisions: bool = False,
+    ) -> TokenizedText:
         tokens: List[Token] = []
 
         line = 0
@@ -85,4 +116,7 @@ class Tokenizer:
 
             i += 1
 
-        return tokens
+        return TokenizedText(
+            text=text,
+            tokens=tokens,
+        )

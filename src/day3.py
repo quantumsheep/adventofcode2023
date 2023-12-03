@@ -1,10 +1,10 @@
-from collections import OrderedDict
 import re
-from tokenize import Token
-from typing import Dict, List
+from collections import OrderedDict
+from typing import List
 
 from utils.input import read_day_input
-from utils.tokenizer import Tokenizer
+from utils.lo import uniq
+from utils.tokenizer import Token, Tokenizer
 
 GEAR_REGEX = r"\*"
 SYMBOLS_REGEX = r"[#$@/+%&\-=]"
@@ -23,12 +23,12 @@ tokenizer = Tokenizer(
 
 
 def part1(data: str) -> int:
-    tokens = tokenizer.to_tokens(data)
+    tokenized_text = tokenizer.tokenize(data)
     columns = len(data.splitlines()[0]) + 1
 
     total = 0
 
-    for token in tokens:
+    for token in tokenized_text.tokens:
         if token.pattern_type != "number":
             continue
 
@@ -51,35 +51,33 @@ def part1(data: str) -> int:
 
 
 def part2(data: str) -> int:
-    tokens = tokenizer.to_tokens(data)
+    tokenized_text = tokenizer.tokenize(data)
     total = 0
 
-    for token in tokens:
+    positions_to_check = [
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+        (0, -1),
+        (0, 1),
+        (1, -1),
+        (1, 0),
+        (1, 1),
+    ]
+
+    for token in tokenized_text.tokens:
         if token.pattern_type != "gear":
             continue
 
-        numbers_around: List[Token] = []
-
-        for other_token in tokens:
-            if other_token.pattern_type != "number":
-                continue
-
-            # Should be in the same line, or the line before or after
-            if other_token.line > (token.line + 1):
-                continue
-            if other_token.line < (token.line - 1):
-                continue
-
-            # Should be in the same column, or the column before or after
-            column_start = other_token.column
-            column_end = other_token.column + len(other_token.value) - 1
-
-            if column_end < (token.column - 1):
-                continue
-            if column_start > (token.column + 1):
-                continue
-
-            numbers_around.append(other_token)
+        tokens_around = [
+            tokenized_text.what_is_at(token.line + y, token.column + x)
+            for x, y in positions_to_check
+        ]
+        numbers_around = filter(
+            lambda a: a is not None and a.pattern_type == "number",
+            tokens_around,
+        )
+        numbers_around: List[Token] = uniq(list(numbers_around))
 
         if len(numbers_around) != 2:
             continue
