@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from typing import List
 
 from utils.input import read_day_input
@@ -24,15 +25,20 @@ NUMBERS = {
     "nine": 9,
 }
 
-TOKENS: List[str] = sorted(
-    [
-        *NUMBERS.keys(),
-    ],
-    key=len,
-    reverse=True,
+PATTERNS: OrderedDict[str, List[str]] = OrderedDict(
+    {
+        "number": sorted(
+            [
+                *list(NUMBERS.keys()),
+            ],
+            key=len,
+            reverse=True,
+        ),
+        "any": ["."],
+    }
 )
 
-tokenizer = Tokenizer(tokens=TOKENS)
+tokenizer = Tokenizer(patterns=PATTERNS, ignore_patterns=["any"])
 
 
 def part1(data: str) -> List[int]:
@@ -40,7 +46,7 @@ def part1(data: str) -> List[int]:
 
     lines = data.splitlines()
     for line in lines:
-        tokens = tokenizer.to_tokens(line)
+        tokens = tokenizer.to_tokens_simple(line)
         tokens = list(filter(lambda a: a.isnumeric(), tokens))
 
         first = NUMBERS[tokens[0]]
@@ -56,7 +62,7 @@ def part2(data: str) -> List[int]:
 
     lines = data.splitlines()
     for line in lines:
-        tokens = tokenizer.to_tokens(line, with_collisions=True)
+        tokens = tokenizer.to_tokens_simple(line, with_collisions=True)
 
         first = NUMBERS[tokens[0]]
         last = NUMBERS[tokens[-1]]
