@@ -39,9 +39,7 @@ def part1(data: str) -> int:
 
         arround = ""
         for i in range(start_line, end_line + 1):
-            arround += (
-                data[i * columns + start_columns : i * columns + end_column] + "\n"
-            )
+            arround += data[i * columns + start_columns : i * columns + end_column] + "\n"
 
         # Check if arround has a symbol
         if re.search(GEAR_REGEX, arround) or re.search(SYMBOLS_REGEX, arround):
