@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List
+
 from utils.input import read_day_input
+from utils.lo import intersect, split_strip
 
 
 @dataclass
@@ -16,13 +18,13 @@ class Card:
         card, numbers = line.split(": ")
         card_id = card.split(" ")[-1]
         winning_numbers, my_numbers = numbers.split(" | ")
-        winning_numbers = [int(n.strip()) for n in winning_numbers.split(" ") if n != ""]
-        my_numbers = [int(n.strip()) for n in my_numbers.split(" ") if n != ""]
+        winning_numbers = [int(n) for n in split_strip(winning_numbers, " ")]
+        my_numbers = [int(n) for n in split_strip(my_numbers, " ")]
 
-        matching_numbers = list(filter(lambda a: a in winning_numbers, my_numbers))
+        matching_numbers = intersect(winning_numbers, my_numbers)
 
         return Card(
-            id=card_id,
+            id=int(card_id),
             winning_numbers=winning_numbers,
             my_numbers=my_numbers,
             matching_numbers=len(matching_numbers),
